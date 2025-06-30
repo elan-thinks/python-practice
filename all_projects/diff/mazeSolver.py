@@ -1,8 +1,6 @@
-import time
 import os
+import time
 from collections import deque
-
-
 
 # Define the maze
 maze = [

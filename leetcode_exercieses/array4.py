@@ -57,6 +57,7 @@ print([da.getSize(), da.getCapacity()])   # [1, 2]
 
 da.set(0, 99)
 print(da.get(0))                          # 99
-print(da)  
+print(da)
 
 # ["Array", 1, "pushback", 1, "getCapacity", "pushback", 2, "getCapacity"]
+

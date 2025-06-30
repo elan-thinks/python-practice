@@ -12,8 +12,11 @@ def traverseTree(root: TreeNode):
     traverseTree(root.left)
     traverseTree(root.right)
 
-# def inserNode(node):
-    
+def inserNode(node):
+    if root is None:
+        return root
+    # if root.left.data < node.data:
+
 
 root = TreeNode(1)
 nodeA = TreeNode(2)
@@ -40,4 +43,5 @@ traverseTree(root)
 
 newNode = TreeNode(10)
 # insertNode(newNode)
+
 
