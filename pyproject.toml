@@ -4,7 +4,10 @@ target-version = ["py312"]
 
 [tool.ruff]
 line-length = 88
-select = ["E", "F", "W", "I"]
-ignore = ["E501"]  # Ignore long line warning if you're using Black
 fix = true
 show-fixes = true
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"] 
+
