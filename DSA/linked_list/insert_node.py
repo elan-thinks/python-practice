@@ -21,9 +21,8 @@ def insertNode(head, newNode, pos):
     while currentNode and count < pos:
         prevNode = currentNode
         currentNode = currentNode.next
-        # prevNode = currentNode
-        # currentNode = currentNode.next
         count += 1
+
     prevNode.next = newNode
     newNode.next = currentNode
     return head
