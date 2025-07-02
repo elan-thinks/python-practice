@@ -43,21 +43,21 @@ class DynamicArray:
     def getCapacity(self) -> int:
         return self.capacity
 
+
 da = DynamicArray(1)
-print([da.getSize(), da.getCapacity()])   # [0, 1]
+print([da.getSize(), da.getCapacity()])  # [0, 1]
 
 da.pushback(1)
-print([da.getSize(), da.getCapacity()])   # [1, 1]
+print([da.getSize(), da.getCapacity()])  # [1, 1]
 
-da.pushback(2)                            # triggers resize
-print([da.getSize(), da.getCapacity()])   # [2, 2]
+da.pushback(2)  # triggers resize
+print([da.getSize(), da.getCapacity()])  # [2, 2]
 
-print(da.popback())                       # 2
-print([da.getSize(), da.getCapacity()])   # [1, 2]
+print(da.popback())  # 2
+print([da.getSize(), da.getCapacity()])  # [1, 2]
 
 da.set(0, 99)
-print(da.get(0))                          # 99
+print(da.get(0))  # 99
 print(da)
 
 # ["Array", 1, "pushback", 1, "getCapacity", "pushback", 2, "getCapacity"]
-

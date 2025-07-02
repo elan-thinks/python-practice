@@ -12,14 +12,13 @@ class Solution:
                     sum.append(i + j)
                     t.append(i)
                     t.append(j)
-            if len(sum)>1:
+            if len(sum) > 1:
                 max(sum)
                 print(sum)
                 return t
 
 
 solution = Solution()
-num = [2,1,3,3]
+num = [2, 1, 3, 3]
 k = int(2)
-print(solution.maxSubsequence(num , k))
-
+print(solution.maxSubsequence(num, k))

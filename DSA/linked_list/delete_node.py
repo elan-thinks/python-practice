@@ -3,6 +3,7 @@ class Node:
         self.data = data
         self.next = None
 
+
 def traverseNode(head):
     currentNode = head
     while currentNode:
@@ -10,7 +11,8 @@ def traverseNode(head):
         currentNode = currentNode.next
     print("null")
 
-def deleteNode(node , nodeToDelete):
+
+def deleteNode(node, nodeToDelete):
     if node.data == nodeToDelete:
         return node.next
     currentNode = node
@@ -24,6 +26,7 @@ def deleteNode(node , nodeToDelete):
         lastNode = currentNode
         currentNode = currentNode.next
     return node
+
 
 nodel1 = Node(7)
 nodel2 = Node(11)

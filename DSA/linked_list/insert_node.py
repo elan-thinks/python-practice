@@ -3,12 +3,14 @@ class Node:
         self.data = data
         self.next = None
 
+
 def traverseNode(head):
     currentNode = head
-    while(currentNode):
-        print(currentNode.data , end=" -> ")
+    while currentNode:
+        print(currentNode.data, end=" -> ")
         currentNode = currentNode.next
     print("null")
+
 
 def insertNode(head, newNode, pos):
     prevNode = None
@@ -27,6 +29,7 @@ def insertNode(head, newNode, pos):
     newNode.next = currentNode
     return head
 
+
 node1 = Node(7)
 node2 = Node(11)
 node3 = Node(3)
@@ -39,6 +42,6 @@ node2.next = node3
 node3.next = node4
 node4.next = node5
 
-node1 = insertNode(node1,node6,3)
+node1 = insertNode(node1, node6, 3)
 traverseNode(node1)
 print(node5.next)

@@ -4,6 +4,7 @@ class TreeNode:
         self.left = None
         self.right = None
 
+
 def traverseTree(root: TreeNode):
     if root is None:
         return root
@@ -13,15 +14,14 @@ def traverseTree(root: TreeNode):
     traverseTree(root.right)
 
 
-
-root = TreeNode('R')
-nodeA = TreeNode('A')
-nodeB = TreeNode('B')
-nodeC = TreeNode('C')
-nodeD = TreeNode('D')
-nodeE = TreeNode('E')
-nodeF = TreeNode('F')
-nodeG = TreeNode('G')
+root = TreeNode("R")
+nodeA = TreeNode("A")
+nodeB = TreeNode("B")
+nodeC = TreeNode("C")
+nodeD = TreeNode("D")
+nodeE = TreeNode("E")
+nodeF = TreeNode("F")
+nodeG = TreeNode("G")
 
 root.left = nodeA
 root.right = nodeB
@@ -35,4 +35,3 @@ nodeB.right = nodeF
 nodeF.left = nodeG
 
 traverseTree(root)
-

@@ -4,6 +4,7 @@ class TreeNode:
         self.left = None
         self.right = None
 
+
 def traverseTree(root: TreeNode):
     if root is None:
         return root
@@ -11,6 +12,7 @@ def traverseTree(root: TreeNode):
     print(root.data)
     traverseTree(root.left)
     traverseTree(root.right)
+
 
 def inserNode(node):
     if root is None:
@@ -43,5 +45,3 @@ traverseTree(root)
 
 newNode = TreeNode(10)
 # insertNode(newNode)
-
-

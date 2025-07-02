@@ -15,7 +15,7 @@ class Solution:
 
 solution = Solution()
 # num = [2,7,11,15]
-num = [3,2,3]
+num = [3, 2, 3]
 # num = [3,3]
 k = int(6)
-print(solution.twoSum(num , k))
+print(solution.twoSum(num, k))

@@ -1,16 +1,17 @@
 # Create a graph
 graph = {
-    'A': ['B', 'C', 'D'],
-    'B': ['A'],
-    'C': ['A', 'D'],
-    'D': ['A', 'C', 'E'],
-    'E': ['D'],
+    "A": ["B", "C", "D"],
+    "B": ["A"],
+    "C": ["A", "D"],
+    "D": ["A", "C", "E"],
+    "E": ["D"],
 }
+
 
 # BFS function
 def bfs(start):
-    visited = set()         # Use set to track visited nodes
-    queue = [start]         # Initialize queue with the starting node
+    visited = set()  # Use set to track visited nodes
+    queue = [start]  # Initialize queue with the starting node
 
     while queue:
         node = queue.pop(0)
@@ -22,11 +23,10 @@ def bfs(start):
                 if neighbor not in visited:
                     queue.append(neighbor)
 
+
 # Run the BFS starting from node 'A'
 if __name__ == "__main__":
-    bfs('A')
-
-
+    bfs("A")
 
 
 # # Create a graph given in the above diagram.

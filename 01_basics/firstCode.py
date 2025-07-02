@@ -1,9 +1,13 @@
 print("Hello World")
+
+
 def add(a, b):
     return a + b
 
+
 def substract(a, b):
     return a - b
+
 
 def main():
     print("🧮 Welcome to Simple Calculator!")
@@ -16,7 +20,7 @@ def main():
     choice = input("Enter 1 or 2 : ")
 
     if choice == "1":
-        result = add(num1,num2)
+        result = add(num1, num2)
         print(f"The result is {result}")
     elif choice == "2":
         result = substract(num1, num2)
@@ -24,6 +28,6 @@ def main():
     else:
         print("❌ Invalid choice.")
 
+
 if __name__ == "__main__":
     main()
-
