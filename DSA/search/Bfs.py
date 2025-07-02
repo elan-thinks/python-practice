@@ -29,6 +29,7 @@ maze = [
 #     list(".#####.."),
 # ]
 
+#  up -> down -> left -> right
 direction = [(-1,0), (1,0), (0,-1), (0,1)]
 
 
@@ -88,7 +89,7 @@ while cur and cur != start:
 print("\nFinal Path:")
 show(maze)
 
-print(visited)
+# print(visited)
 
 
 # show(maze)
