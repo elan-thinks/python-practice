@@ -1,57 +1,22 @@
-import os
 import time
 from collections import deque
 
-# here the maze map :)
-maze = [
-    list("S...#....~....#.......#..."),
-    list(".###.#.#####.#.#####..#.#."),
-    list("...#.#.....#.#.....#..#.#."),
-    list(".#.#.###.#.#.#####.#.##.#."),
-    list(".#...~.#.#...^...#.#....#."),
-    list(".#####.#.#####.###.#######"),
-    list(".#.....#.....#.....#.....#"),
-    list(".#.#########.#####.#.###.#"),
-    list(".#.........#.....#.#...#.#"),
-    list(".#.#######.#####.#.###.#.#"),
-    list(".#.#.....#.....#.#...#.#.#"),
-    list(".#.#.###.#####.#.###.#.#.#"),
-    list(".#.#...#.....#.#.....#...#"),
-    list(".#.###.#####.#.#######.#.#"),
-    list("...#.....~...#.........#.E"),
-]
+import map
 
-# maze = [
-#     list("S...#..."),
-#     list(".#.#.#.."),
-#     list(".#.....#"),
-#     list("###.#.#."),
-#     list("...#...E"),
-#     list(".#####.."),
-# ]
-
-#  up -> down -> left -> right
+# Movement: up, down, left, right
 direction = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-
-def show(maze_map):
-    os.system("cls" if os.name == "nt" else "clear")
-    for row in maze:
-        print(" ".join(row))
-
-
+# Locate start (S) and end (E)
 start = end = None
-wall = "#"
-free_path = "."
-
-for x in range(len(maze)):
-    for y in range(len(maze[0])):
-        if maze[x][y] == "S":
+for x in range(len(map.park_map)):
+    for y in range(len(map.park_map[0])):
+        if map.park_map[x][y] == "S":
             start = (x, y)
-        if maze[x][y] == "E":
+        elif map.park_map[x][y] == "E":
             end = (x, y)
 
 
+# Breadth-First Search setup
 queue = deque([start])
 visited = {start}
 parent = {start: None}
@@ -59,41 +24,41 @@ parent = {start: None}
 while queue:
     row, col = queue.popleft()
 
-    if maze[row][col] not in ("S", "E"):
-        maze[row][col] = "*"
+    if map.park_map[row][col] not in ("S", "E"):
+        if map.park_map[row][col] in ("^", "¥", "="):
+            map.park_map[row][col] = "X"
+        else:
+            map.park_map[row][col] = "."
 
-    show(maze)
-    time.sleep(0.1)
+    map.show(map.park_map)
+    time.sleep(0.05)
 
     if (row, col) == end:
         break
 
+
     for drow, dcol in direction:
         new_row, new_col = row + drow, col + dcol
-        inside = 0 <= new_row < len(maze) and 0 <= new_col < len(maze[0])
+        inside_bounds = 0 <= new_row < len(map.park_map) and 0 <= new_col < len(map.park_map[0])
+        new_pos = (new_row, new_col)
 
-        if (
-            inside
-            and maze[new_row][new_col] not in ("#", "~", "^")
-            and (new_row, new_col) not in visited
-        ):
-            queue.append((new_row, new_col))
-            visited.add((new_row, new_col))
-            # queue.popLeft(0)
-            # print(visited)
-            parent[(new_row, new_col)] = (row, col)
+        if (inside_bounds and map.park_map[new_row][new_col] not in ("#","$","~") and new_pos not in visited):
+            queue.append(new_pos)
+            visited.add(new_pos)
+            parent[new_pos] = (row, col)
 
 # Reconstruct path
 cost = 0
 cur = end
 while cur and cur != start:
     r, c = cur
-    if maze[r][c] not in ("S", "E"):
-        maze[r][c] = "@"
+    if map.park_map[r][c] not in ("S", "E"):
+        map.park_map[r][c] = "@"
+        cost += 1
     cur = parent[cur]
-    cost += 1
 
-# Final Maze
-show(maze)
-print("\nFinal Path:")
-print("total cost is  : ", cost)
+# Final Maze Display
+map.show(map.park_map)
+print("\nFinal Path Map ")
+print("\nTotal cost of the Path  : ", cost)
+print("Number of Nodes exploard", len(parent))
