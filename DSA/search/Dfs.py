@@ -2,27 +2,28 @@ import time
 
 import map
 
-# Movement directions: up, down, left, right
-direction = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-# Find start (S) and end (E) positions
+#first track the exact location of were to start and end
 start = end = None
-for x in range(len(map.park_map)):
-    for y in range(len(map.park_map[0])):
-        if map.park_map[x][y] == "S":
-            start = (x, y)
-        elif map.park_map[x][y] == "E":
-            end = (x, y)
-
-
+for i in range(len(map.park_map)):
+    for j in range(len(map.park_map[0])):
+        if map.park_map[i][j] == "S":
+            start = (i, j)
+        elif map.park_map[i][j] == "E":
+            end = (i, j)
 
 # DFS setup
 stack = [start]
-visited = {start}
-parent = {start: None}
+visited = set()
+parent = {}
 
 while stack:
+    #here pops the last node of the stack
     row, col = stack.pop()
+    current = (row, col)
+
+    if current in visited:
+        continue
+    visited.add(current)
 
     if map.park_map[row][col] not in ("S", "E"):
         if map.park_map[row][col] in ("^", "¥", "="):
@@ -31,36 +32,47 @@ while stack:
             map.park_map[row][col] = "."
 
     map.show(map.park_map)
-    time.sleep(0.1)
+    time.sleep(0.05)
 
-    if (row, col) == end:
-        print("Reached the End!")
+    if current == end:
+        print("\nReached the End!")
         break
 
-    for drow, dcol in direction:
-        new_row, new_col = row + drow, col + dcol
-        inside = 0 <= new_row < len(map.park_map) and 0 <= new_col < len(map.park_map[0])
-        new_pos = (new_row, new_col)
+    for dx, dy in map.direction:
+        new_r, new_c = row + dx, col + dy
+        new_pos = (new_r, new_c)
 
-        if inside and new_pos not in visited:
-            cell = map.park_map[new_row][new_col]
-            if cell in map.cell_cost and map.cell_cost[cell] != float("inf"):
-                stack.append(new_pos)
-                visited.add(new_pos)
-                parent[new_pos] = (row, col)
+        if (
+            0 <= new_r < len(map.park_map)
+            and 0 <= new_c < len(map.park_map[0])
+            and new_pos not in visited
+            and map.park_map[new_r][new_c] not in ("#", "~", "$")
+        ):
 
-# Reconstruct path
-cost = 0
+            stack.append(new_pos)
+            parent[new_pos] = current  # Track path
+
+# here econstruct path
 cur = end
-while cur and cur != start:
+cost = 0
+while cur != start:
     r, c = cur
     if map.park_map[r][c] not in ("S", "E"):
         map.park_map[r][c] = "@"
-        cost += 1
-    cur = parent.get(cur, None)
+        cost += 1  # treat all obstacles the same way with free path
+
+    cur = parent.get(cur)
+    if cur is None:
+        print("\nNo path found!")
+        break
 
 # Final display
 map.show(map.park_map)
-print("\nFinal Path Map ")
-print("\nTotal cost of the Path  : ", cost)
-print("Number of Nodes exploard", len(parent))
+
+print("")
+print("    --------------------------------------")
+print("  |  Final Path Map with DFS              |")
+print("  |  Total steps of the Path :", cost,"        |")
+print("  |  Number of Nodes Explored:", len(visited),"       |")
+print("    --------------------------------------")
+
