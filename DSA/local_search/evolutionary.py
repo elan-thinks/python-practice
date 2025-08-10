@@ -1,6 +1,5 @@
-import random
 import math
-from collections import defaultdict
+import random
 
 # ======================
 # PROBLEM DEFINITION
@@ -23,7 +22,7 @@ def distance(p1, p2):
 
 def route_cost(route):
     """Fitness function (lower cost = better)"""
-    return sum(distance(cities[route[i]], cities[route[(i+1)%len(route)]]) 
+    return sum(distance(cities[route[i]], cities[route[(i+1)%len(route)]])
             for i in range(len(route)))
 
 # ======================
@@ -43,21 +42,22 @@ def ordered_crossover(parent1, parent2):
     """OX crossover preserving order"""
     size = len(parent1)
     a, b = sorted(random.sample(range(size), 2))
-    
+
     # Initialize child with None values
     child = [None]*size
-    
+
     # Copy segment from parent1
     child[a:b] = parent1[a:b]
-    
+
     # Fill remaining from parent2 (order preserved)
     ptr = b
     for city in parent2[b:] + parent2[:b]:
         if city not in child[a:b]:
-            if ptr >= size: ptr = 0
+            if ptr >= size :
+                ptr = 0
             child[ptr] = city
             ptr += 1
-    
+
     return child
 
 def swap_mutation(individual, mutation_rate=0.01):
@@ -70,42 +70,42 @@ def swap_mutation(individual, mutation_rate=0.01):
 # ======================
 # GENETIC ALGORITHM
 # ======================
-def genetic_algorithm(cities, generations=100, pop_size=50, 
+def genetic_algorithm(cities, generations=100, pop_size=50,
                      mutation_rate=0.01, tournament_size=3):
     # Initialize population
     population = initialize_population(pop_size, cities)
     best_individual = min(population, key=lambda x: route_cost(x))
     best_cost = route_cost(best_individual)
-    
+
     for gen in range(generations):
         new_population = []
-        
+
         # Elitism: keep best individual
         new_population.append(best_individual)
-        
+
         while len(new_population) < pop_size:
             # Selection
             parent1 = tournament_selection(population, tournament_size)
             parent2 = tournament_selection(population, tournament_size)
-            
+
             # Crossover
             child = ordered_crossover(parent1, parent2)
-            
+
             # Mutation
             child = swap_mutation(child, mutation_rate)
-            
+
             new_population.append(child)
-        
+
         # Update population
         population = new_population
-        
+
         # Track best solution
         current_best = min(population, key=lambda x: route_cost(x))
         current_cost = route_cost(current_best)
         if current_cost < best_cost:
             best_individual = current_best
             best_cost = current_cost
-    
+
     return best_individual, best_cost
 
 # ======================
@@ -227,3 +227,4 @@ print(f"Improvement over random: {route_cost(random.sample(list(cities.keys()), 
 
 # print("Best route found : ", best_route)
 # print("Best distance" , best_distance)
+
