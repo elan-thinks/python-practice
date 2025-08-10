@@ -19,7 +19,7 @@ visited = set()
 parent = {}
 
 while queue:
-    # here take the first node of the queue
+    # here take the first in node of the queue
     row, col = queue.popleft()
     current_node = (row, col)
 
@@ -77,4 +77,5 @@ print("  |  Final Path Map with BFS                |")
 print("  |  Total steps of the shortest Path: ", cost," |")
 print("  |  Number of Nodes exploard : ", len(visited),"       |")
 print("    ----------------------------------------")
+
 
