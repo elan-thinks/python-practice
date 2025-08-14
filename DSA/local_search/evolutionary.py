@@ -1,207 +1,136 @@
+# evolutionary.py
 import math
 import random
 import time
 
-import map
+import city_map
 import matplotlib.pyplot as plt
 
-# ======================
-# PROBLEM DEFINITION
-# ======================
-# cities = {
-#     "A": (0, 0),
-#     "B": (1, 5),
-#     "C": (5, 2),
-#     "D": (3, 6),
-#     "E": (7, 3),
-#     "F": (2, 8)
-# }
 
-# ======================
-# CORE FUNCTIONS
-# ======================
 def distance(p1, p2):
-    """Euclidean distance between two points"""
     return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
 def route_cost(route):
-    """Calculate total distance of a route"""
-    return sum(distance(map.cities[route[i]], map.cities[route[(i+1)%len(route)]])
-            for i in range(len(route)))
+    cities = city_map.cities
+    return sum(distance(cities[route[i]], cities[route[(i+1) % len(route)]]) for i in range(len(route)))
 
-# ======================
-# GENETIC OPERATORS
-# ======================
-def initialize_population(pop_size, city_list):
-    """Creates random valid tours with some diversity"""
-    population = []
-    # Include some structured solutions
-    population.append(city_list.copy())  # Original order
-    population.append(city_list[::-1])   # Reversed order
+def create_route(city_list):
+    route = city_list[:]
+    random.shuffle(route)
+    return route
 
-    # Add random permutations for the rest
-    for _ in range(pop_size - 2):
-        population.append(random.sample(city_list, len(city_list)))
-    return population
+def initial_population(pop_size, city_list):
+    return [create_route(city_list) for _ in range(pop_size)]
 
-def tournament_selection(population, k=3):
-    """Selects best from random k individuals"""
-    tournament = random.sample(population, k)
-    return min(tournament, key=lambda x: route_cost(x))
+def rank_routes(population):
+    fitness_results = [(route, route_cost(route)) for route in population]
+    fitness_results.sort(key=lambda x: x[1])
+    return fitness_results
 
-def ordered_crossover(parent1, parent2):
-    """OX crossover preserving order"""
-    size = len(parent1)
-    a, b = sorted(random.sample(range(size), 2))
-    child = [None]*size
-    child[a:b] = parent1[a:b]
+def selection(ranked, elite_size):
+    selection_results = [r[0] for r in ranked[:elite_size]]
+    fitness_sum = sum(1.0 / r[1] for r in ranked)
+    probs = [(1.0 / r[1]) / fitness_sum for r in ranked]
 
-    ptr = b
-    for city in parent2[b:] + parent2[:b]:
-        if city not in child[a:b]:
-            if ptr >= size:
-                ptr = 0
-            child[ptr] = city
-            ptr += 1
-    return child
+    while len(selection_results) < len(ranked):
+        pick = random.choices(ranked, weights=probs, k=1)[0][0]
+        selection_results.append(pick)
+    return selection_results
 
-def mutate(individual, mutation_rate):
-    """Randomly swaps two cities with mutation_rate probability"""
-    if random.random() < mutation_rate:
-        i, j = random.sample(range(len(individual)), 2)
-        individual[i], individual[j] = individual[j], individual[i]
-    return individual
+def crossover(parent1, parent2):
+    start, end = sorted(random.sample(range(len(parent1)), 2))
+    child_p1 = parent1[start:end+1]
+    child_p2 = [city for city in parent2 if city not in child_p1]
+    return child_p2[:start] + child_p1 + child_p2[start:]
 
-# ======================
-# GENETIC ALGORITHM
-# ======================
-def genetic_algorithm(cities, generations=100, pop_size=50,
-                     mutation_rate=0.01, tournament_size=3):
+def mutate(route, mutation_rate):
+    for _ in range(len(route)):
+        if random.random() < mutation_rate:
+            swap_with_1, swap_with_2 = random.sample(range(len(route)), 2)
+            route[swap_with_1], route[swap_with_2] = route[swap_with_2], route[swap_with_1]
+    return route
+
+def next_generation(current_gen, elite_size, mutation_rate):
+    ranked = rank_routes(current_gen)
+    selection_results = selection(ranked, elite_size)
+
+    children = []
+    children.extend(selection_results[:elite_size])
+
+    for i in range(len(current_gen) - elite_size):
+        parent1 = random.choice(selection_results)
+        parent2 = random.choice(selection_results)
+        child = crossover(parent1, parent2)
+        children.append(child)
+
+    next_gen = [mutate(child, mutation_rate) for child in children]
+
+    return next_gen
+
+def genetic_algorithm(pop_size=500, elite_size=50, mutation_rate=0.01, generations=1000):
+    city_list = list(city_map.cities.keys())
+    population = initial_population(pop_size, city_list)
     start_time = time.time()
-    city_list = list(map.cities.keys())
-    population = initialize_population(pop_size, city_list)
 
-    # Tracking variables
-    history = {
-        'best_cost': [],
-        'avg_cost': [],
-        'diversity': [],
-        'best_route': None
-    }
+    best_route = None
+    best_cost = float('inf')
+    cost_progression_time = []
+    cost_progression_generations = []
 
-    best_individual = min(population, key=lambda x: route_cost(x))
-    best_cost = route_cost(best_individual)
+    for gen in range(1, generations + 1):
+        population = next_generation(population, elite_size, mutation_rate)
+        ranked = rank_routes(population)
+        current_best = ranked[0]
 
-    for gen in range(generations):
-        new_population = []
+        if current_best[1] < best_cost:
+            best_route, best_cost = current_best
+            cost_progression_time.append((time.time() - start_time, best_cost))
+            cost_progression_generations.append((gen, best_cost))
 
-        # Elitism: keep best individual
-        population.sort(key=lambda x: route_cost(x))
-        new_population.append(population[0])
+    elapsed = time.time() - start_time
+    return best_route, best_cost, elapsed, cost_progression_time, cost_progression_generations
 
-        while len(new_population) < pop_size:
-            parent1 = tournament_selection(population, tournament_size)
-            parent2 = tournament_selection(population, tournament_size)
-            child = ordered_crossover(parent1, parent2)
-            child = mutate(child, mutation_rate)
-            new_population.append(child)
+def plot_results(best_route, cities, progression_data, title):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
-        population = new_population
+    # Plot 1: Best Route
+    route_coords = [cities[city] for city in best_route]
+    route_coords.append(cities[best_route[0]])
+    x_coords, y_coords = zip(*route_coords)
 
-        # Calculate metrics
-        costs = [route_cost(ind) for ind in population]
-        current_best = min(costs)
-        avg_cost = sum(costs)/len(costs)
+    ax1.plot(x_coords, y_coords, 'o-')
+    ax1.set_title(f"{title}: Best Tour")
+    ax1.set_xlabel("X-coordinate")
+    ax1.set_ylabel("Y-coordinate")
+    ax1.grid(True)
 
-        # Update best solution
-        if current_best < best_cost:
-            best_individual = population[costs.index(current_best)]
-            best_cost = current_best
+    for city, (x, y) in cities.items():
+        ax1.text(x, y, city, ha='right', va='bottom')
 
-        # Track diversity (unique solutions)
-        unique = len(set(tuple(ind) for ind in population))
-
-        # Update history
-        history['best_cost'].append(best_cost)
-        history['avg_cost'].append(avg_cost)
-        history['diversity'].append(unique/pop_size)
-        history['best_route'] = best_individual
-
-    history['runtime'] = time.time() - start_time
-    return best_individual, best_cost, history
-
-# ======================
-# VISUALIZATION
-# ======================
-def visualize_ga_results(results):
-    plt.figure(figsize=(15, 10))
-
-    # Plot 1: Cost Progression
-    plt.subplot(2, 2, 1)
-    plt.plot(results['best_cost'], 'b-', label='Best Cost')
-    plt.plot(results['avg_cost'], 'g--', label='Average Cost')
-    plt.title('Cost Progression Through Generations')
-    plt.xlabel('Generation')
-    plt.ylabel('Tour Cost')
-    plt.legend()
-    plt.grid(True)
-
-    # Plot 2: Population Diversity
-    plt.subplot(2, 2, 2)
-    plt.plot(results['diversity'], 'r-')
-    plt.title('Population Diversity')
-    plt.xlabel('Generation')
-    plt.ylabel('Unique Solutions Ratio')
-    plt.grid(True)
-
-    # Plot 3: Runtime Information
-    plt.subplot(2, 2, 3)
-    plt.bar(['Runtime'], [results['runtime']], color='orange')
-    plt.title(f'Total Execution Time: {results["runtime"]:.2f} seconds')
-    plt.ylabel('Seconds')
-
-    # Plot 4: Best Route Visualization
-    plt.subplot(2, 2, 4)
-    route = results['best_route']
-    x = [map.cities[city][0] for city in route] + [map.cities[route[0]][0]]
-    y = [map.cities[city][1] for city in route] + [map.cities[route[0]][1]]
-    plt.plot(x, y, 'bo-')
-    for city, (xi, yi) in map.cities.items():
-        plt.text(xi, yi, city, fontsize=12, ha='center', va='bottom')
-    plt.title(f'Best Route (Cost: {min(results["best_cost"]):.2f})')
-    plt.xlabel('X Coordinate')
-    plt.ylabel('Y Coordinate')
-    plt.grid(True)
+    # Plot 2: Cost Progression
+    x_values, costs = zip(*progression_data)
+    ax2.plot(x_values, costs)
+    ax2.set_title(f"{title}: Best Cost Progression (vs. Time)")
+    ax2.set_xlabel("Time (s)")
+    ax2.set_ylabel("Best Tour Cost")
+    ax2.grid(True)
 
     plt.tight_layout()
     plt.show()
 
-# ======================
-# MAIN EXECUTION
-# ======================
 if __name__ == "__main__":
-    # Parameters
-    params = {
-        'generations': 200,
-        'pop_size': 100,
-        'mutation_rate': 0.02,
-        'tournament_size': 5
-    }
+    random.seed(42)
+    best_route, best_cost, elapsed, progression_time, progression_generations = genetic_algorithm()
 
-    print("=== GENETIC ALGORITHM FOR TSP ===")
-    initial_route = list(map.cities.keys())
-    print(f"Initial route: {initial_route}")
-    print(f"Initial cost: {route_cost(initial_route):.2f}")
+    print("--- Genetic Algorithm Results ---")
+    print(f"Final tour cost: {best_cost:.2f}")
+    print(f"Time taken: {elapsed:.3f}s")
 
-    # Run GA
-    best_route, best_cost, history = genetic_algorithm(map.cities, **params)
+    route_str = " -> ".join(best_route) + " -> " + best_route[0]
+    print(f"Best route: {route_str}")
 
-    # Results
-    print("\n=== RESULTS ===")
-    print(f"Optimized route: {best_route}")
-    print(f"Best cost: {best_cost:.2f}")
-    print(f"Improvement: {route_cost(initial_route) - best_cost:.2f}")
-    print(f"Runtime: {history['runtime']:.2f} seconds")
+    print("\nCost Progression (Generation, Cost):")
+    for generation, cost in progression_generations:
+        print(f"  Generation {generation}: {cost:.2f}")
 
-    # Visualize all results
-    visualize_ga_results(history)
+    plot_results(best_route, city_map.cities, progression_time, "Genetic Algorithm")
